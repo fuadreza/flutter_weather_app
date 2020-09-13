@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather_app/screen/city_screen.dart';
 import 'package:flutter_weather_app/services/weather_service.dart';
 import 'package:flutter_weather_app/utilities/constants.dart';
 
@@ -27,6 +28,13 @@ class _LocationScreenState extends State<LocationScreen> {
 
   void updateUI(dynamic weatherData) {
     setState(() {
+      if (weatherData == null) {
+        _temperature = 0;
+        _weatherIcon = 'Error';
+        _message = 'Unable to get weather data';
+        _cityName = '';
+        return;
+      }
       double temp = weatherData['main']['temp'];
       _temperature = temp.toInt();
       _message = _weatherModel.getMessage(_temperature);
@@ -58,14 +66,28 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var weatherData = await _weatherModel.getWeatherData();
+                      updateUI(weatherData);
+                    },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
                     ),
                   ),
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var typedName = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return CityScreen();
+                        }),
+                      );
+                      if(typedName != null){
+                        var weatherData = await _weatherModel.getCityWeather(typedName);
+                        updateUI(weatherData);
+                      }
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
